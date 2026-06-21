@@ -2,6 +2,9 @@
 # 从 opencode-official checkout 构建 opencode binary 并 build Docker 镜像
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
 # 配置
 OPENCODE_CHECKOUT="${OPENCODE_CHECKOUT:-$(realpath ../opencode_ios_client/opencode-official)}"
 GHCR_USER="${GHCR_USER:-your-github-username}"
@@ -17,9 +20,13 @@ git branch --show-current | grep -q "private-dev-squashed" || {
     exit 1
 }
 
-echo "build linux-x64-musl binary..."
+echo "install dependencies..."
 bun install
-bun run build -- --single --skip-install --target linux-x64-baseline-musl
+
+echo "build all target binaries (needed for linux-x64-baseline-musl)..."
+cd packages/opencode
+bun run build
+cd "$OPENCODE_CHECKOUT"
 
 BINARY="packages/opencode/dist/opencode-linux-x64-baseline-musl/bin/opencode"
 if [ ! -f "$BINARY" ]; then
@@ -28,15 +35,13 @@ if [ ! -f "$BINARY" ]; then
 fi
 
 echo "=== 2. 复制 binary 到 Docker context ==="
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 mkdir -p "$PROJECT_DIR/opencode/bin"
 cp "$BINARY" "$PROJECT_DIR/opencode/bin/opencode"
 chmod +x "$PROJECT_DIR/opencode/bin/opencode"
 
 echo "=== 3. Build Docker 镜像 ==="
 cd "$PROJECT_DIR"
-docker build -t "ghcr.io/$GHCR_USER/$IMAGE_NAME:$IMAGE_TAG" ./opencode
+docker build --platform linux/amd64 -t "ghcr.io/$GHCR_USER/$IMAGE_NAME:$IMAGE_TAG" ./opencode
 
 echo "=== 4. Push 到 GHCR ==="
 docker push "ghcr.io/$GHCR_USER/$IMAGE_NAME:$IMAGE_TAG"

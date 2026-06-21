@@ -4,37 +4,16 @@ services:
     container_name: sshd-gateway
     restart: unless-stopped
     ports:
-      - "${SSH_PORT:-8008}:22"
-    environment:
-      FORWARD_PORT_BASE: 19000
+      - "${SSH_PORT:-8006}:22"
     volumes:
       - ./keys:/keys:ro
     networks:
       - internal
-
-  # 每个用户一个 opencode 容器。
-  # add_user.sh 会自动在下方追加 service。
-  # 模板见 skills/add_user.md 的 "opencode service 模板"。
-
-  # opencode-alice:
-  #   image: ghcr.io/your-github-username/opencode-private:latest
-  #   container_name: opencode-alice
-  #   restart: unless-stopped
-  #   environment:
-  #     OPENCODE_AUTH_CONTENT: "${OPENCODE_AUTH_CONTENT}"
-  #     TAVILY_API_KEY: "${TAVILY_API_KEY}"
-  #     OPENCODE_CONFIG_CONTENT: "${OPENCODE_CONFIG_CONTENT:-}"
-  #   volumes:
-  #     - opencode-data-alice:/data
-  #     - opencode-config-alice:/data/config
-  #     - ./workspaces/alice:/workspace
-  #   networks:
-  #     - internal
 
 networks:
   internal:
     driver: bridge
 
 volumes:
-  # opencode-data-alice:
-  # opencode-config-alice:
+  sshd-gateway-empty:
+    name: sshd-gateway-empty

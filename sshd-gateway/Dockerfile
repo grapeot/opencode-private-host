@@ -3,6 +3,7 @@ FROM alpine:latest
 RUN apk add --no-cache openssh socat
 
 RUN addgroup -S opencode && adduser -S -G opencode opencode \
+    && passwd -d opencode \
     && mkdir -p /home/opencode/.ssh \
     && chown opencode:opencode /home/opencode/.ssh \
     && chmod 700 /home/opencode/.ssh

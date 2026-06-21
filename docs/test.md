@@ -4,7 +4,7 @@
 
 ### 1. 容器构建验证
 
-sshd-gateway 镜像能 build 成功，opencode 镜像能 build 成功（需要先有 binary）。
+sshd-gateway 镜像能 build 成功，opencode 镜像能 build 成功（需要先有 binary）。OpenCode 镜像固定按 `linux/amd64` 构建，因为当前打包的是 `opencode-linux-x64-baseline-musl`。
 
 ```bash
 docker compose build
@@ -12,28 +12,28 @@ docker compose build
 
 ### 2. SSH 认证验证
 
-加一个测试 key 后，能用这个 key SSH 连上 sshd-gateway 容器，但不能 exec 命令。
+加一个测试用户后，能用这个 key 通过 sshd-gateway forward 到自己的 OpenCode 容器，但不能 exec 命令。
 
 ```bash
 # 生成测试 key
 ssh-keygen -t ed25519 -f /tmp/test_key -N ""
 
-# 添加到 authorized_keys
-echo 'permitopen="127.0.0.1:18080",no-pty,no-X11-forwarding,no-agent-forwarding '"$(cat /tmp/test_key.pub)"' #user:test' >> keys/authorized_keys
+# 添加用户但跳过 workspace clone 和自动启动，便于本地快速 E2E
+SKIP_WORKSPACE_INIT=1 SKIP_DOCKER_UP=1 scripts/add_user.sh testuser /tmp/test_key.pub
 
 # 启动
-docker compose up -d
+op run --env-file .env -- docker compose up -d --build --remove-orphans
 
 # 验证：能连上但被 ForceCommand 拒绝
-ssh -p 8008 -i /tmp/test_key opencode@localhost
+ssh -p 8006 -i /tmp/test_key opencode@localhost
 # 预期：连接成功但立即被 nologin 关闭
 
 # 验证：exec 被拒绝
-ssh -p 8008 -i /tmp/test_key opencode@localhost ls
-# 预期：This account is currently not available.
+ssh -p 8006 -i /tmp/test_key opencode@localhost true
+# 预期：This account is not available
 
 # 验证：forward 能到达 opencode
-ssh -p 8008 -i /tmp/test_key -L 14096:127.0.0.1:18080 -N opencode@localhost &
+ssh -p 8006 -i /tmp/test_key -L 14096:127.0.0.1:19001 -N opencode@localhost &
 curl -s http://localhost:14096/
 # 预期：opencode HTTP 响应
 ```
@@ -44,22 +44,22 @@ curl -s http://localhost:14096/
 
 ```bash
 # 尝试 forward 到其他端口（应被 permitopen 拒绝）
-ssh -p 8008 -i /tmp/test_key -L 12345:127.0.0.1:22 -N opencode@localhost
+ssh -p 8006 -i /tmp/test_key -L 12345:127.0.0.1:19002 -N opencode@localhost
 # 预期：channel open refused
 
 # 尝试 forward 到其他 host（应被 permitopen 拒绝）
-ssh -p 8008 -i /tmp/test_key -L 12345:8.8.8.8:53 -N opencode@localhost
+ssh -p 8006 -i /tmp/test_key -L 12345:8.8.8.8:53 -N opencode@localhost
 # 预期：channel open refused
 ```
 
 ### 4. 1Password 注入验证
 
-`op run --env-file .env -- docker compose up -d` 能正确解析引用，opencode 容器内能看到真实 API key。
+`op run --env-file .env -- docker compose up -d` 能正确解析引用，opencode 容器内能看到 Tavily API key。不要打印真实值。
 
 ```bash
 # 验证环境变量已注入
-docker compose exec opencode env | grep OPENCODE_AUTH_CONTENT
-# 预期：有值（不检查具体内容，避免泄露）
+docker compose exec opencode-testuser sh -c 'test -n "$TAVILY_API_KEY"'
+# 预期：退出码 0（不打印具体内容，避免泄露）
 ```
 
 ### 5. 中国可达性验证（手工）
@@ -68,7 +68,7 @@ docker compose exec opencode env | grep OPENCODE_AUTH_CONTENT
 
 ```bash
 # 在中国境内机器上执行
-ssh -p 8008 -i <key> -o ConnectTimeout=10 opencode@<VPS_IP>
+ssh -p 8006 -i <key> -o ConnectTimeout=10 opencode@<VPS_IP>
 # 测试多次、不同时段、不同运营商
 ```
 
@@ -78,4 +78,10 @@ ssh -p 8008 -i <key> -o ConnectTimeout=10 opencode@<VPS_IP>
 
 ## 自动化测试
 
-当前没有自动化测试。原因：架构验证依赖外部资源（VPS、1Password、SSH 客户端），适合手工验证。后续如果加 enrollment service，需要补 API 测试。
+当前有 shell 自动化覆盖 key 管理 CLI：
+
+```bash
+tests/test_manage_key.sh
+```
+
+容器 E2E 仍偏手工，因为需要 Docker、1Password CLI、SSH 客户端和本地可用端口。后续如果加 enrollment service，需要补 API 测试。

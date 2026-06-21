@@ -213,11 +213,11 @@ GHCR 公开镜像免费，pull 不需要认证。push 需要 PAT（`write:packag
 
 ## 端口可达性
 
-SSH 端口默认 8008（可配置）。非标准端口被针对的概率低于 22。需要在目标用户网络环境下实测连通性。
+SSH 端口默认 8006（可配置）。非标准端口被针对的概率低于 22。需要在目标用户网络环境下实测连通性。
 
-备用策略：如果 8008 不通，依次试 2222、8443、443。443 上的 SSH 流量特征不明显，通常能过。
+备用策略：如果 8006 不通，依次试 2222、8443、443。443 上的 SSH 流量特征不明显，通常能过。
 
-测试方法：从目标用户网络 `ssh -p 8008 opencode@<VPS_IP> -i <key>`，看连接是否稳定、是否被 RST。测试多个时段和多个运营商。
+测试方法：从目标用户网络 `ssh -p 8006 opencode@<VPS_IP> -i <key>`，看连接是否稳定、是否被 RST。测试多个时段和多个运营商。
 
 ## 安全审计
 
@@ -240,4 +240,4 @@ sshd-gateway 对外暴露的唯一端口。防护措施：
 
 ### 容器逃逸
 
-sshd-gateway 和各 opencode 容器都以非 root 运行。host 端口只映射 sshd-gateway 的 22→8008。所有 opencode 容器的 4096 不映射到 host。容器间通过 Docker internal network 通信，没有 host 端口映射。
+sshd-gateway 和各 opencode 容器都以非 root 运行。host 端口只映射 sshd-gateway 的 22→8006。所有 opencode 容器的 4096 不映射到 host。容器间通过 Docker internal network 通信，没有 host 端口映射。

@@ -71,10 +71,10 @@ scripts/manage_key.sh remove alice /path/to/lost_device_ed25519.pub
 
 ## 测试设计
 
-`tests/test_manage_key.py`：
+`tests/test_manage_key.sh`：
 
 1. 创建临时 authorized_keys 文件，预置几个用户（部分用户多 key）。
-2. 测试 `add` 新用户的第一个 key：验证行被追加，格式正确，`#user:` 标记正确。
+2. 测试 `add` 已有用户的第一个 key：验证行被追加，格式正确，`#user:` 标记正确。
 3. 测试 `add` 已有用户的新 key（第二个设备）：验证新行追加，旧行保留。
 4. 测试 `add` 已存在的 key（完全匹配）：不产生重复行。
 5. 测试 `add` 不存在的用户：报错退出码非 0。
@@ -89,4 +89,6 @@ scripts/manage_key.sh remove alice /path/to/lost_device_ed25519.pub
 
 ## 已知陷阱
 
-（部署后补充）
+- `manage_key.sh add` 要求用户已经存在于 `keys/port_map`，用户创建由 `scripts/add_user.sh` 负责。
+- `authorized_keys` 行用 `#user:<username>` 做归属标记，删除用户时 `scripts/remove_user.sh` 会删除该用户所有 key 行。
+- 只支持 `ssh-ed25519` 公钥，方便限制格式和减少老旧 key 类型。
