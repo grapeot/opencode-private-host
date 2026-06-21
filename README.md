@@ -7,7 +7,7 @@
 两个 Docker 容器，通过内部网络连接：
 
 ```
-iOS 客户端
+[iOS 客户端](https://github.com/grapeot/opencode_ios_client)
   │ SSH (ed25519 key auth, 非标准端口)
   ▼
 sshd-gateway 容器 (Alpine + OpenSSH + socat)
@@ -87,15 +87,21 @@ cp .env.example .env
 │   ├── Dockerfile
 │   ├── sshd_config
 │   └── entrypoint.sh
-├── opencode/            # OpenCode 容器
+├── opencode/            # OpenCode 容器镜像构建上下文
 │   ├── Dockerfile
 │   └── bin/             # 预编译 binary（gitignored）
-├── keys/                # authorized_keys（gitignored）
+├── keys/                # authorized_keys + port_map（gitignored）
+├── workspaces/          # 每用户 workspace（gitignored）
+├── skills/              # 运维 skill 文档
+│   ├── add_user.md
+│   └── key_management.md
 ├── scripts/
 │   ├── build_image.sh   # 构建 + push 镜像
 │   ├── deploy.sh        # 1Password 注入 + docker compose up
-│   ├── add_user.sh      # 添加用户公钥
-│   └── remove_user.sh   # 删除用户公钥
+│   ├── add_user.sh      # 添加用户（容器+volume+workspace+key）
+│   ├── remove_user.sh   # 删除用户
+│   └── manage_key.sh    # 用户 key 管理（增删查轮换）
+├── tests/               # key 管理 CLI 测试
 ├── docs/
 │   ├── prd.md
 │   ├── rfc.md
