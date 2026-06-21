@@ -46,7 +46,7 @@ if [ "${SKIP_WORKSPACE_INIT:-0}" != "1" ]; then
     rm -rf "$WORKSPACE_DIR"
     git clone --depth 1 https://github.com/grapeot/context-infrastructure "$WORKSPACE_DIR"
     git clone --depth 1 https://github.com/grapeot/tavily-skill "$WORKSPACE_DIR/adhoc_jobs/tavily_skill"
-    (cd "$WORKSPACE_DIR/adhoc_jobs/tavily_skill" && uv venv .venv && .venv/bin/python -m pip install -e '.[dev]')
+    (cd "$WORKSPACE_DIR/adhoc_jobs/tavily_skill" && uv venv .venv && uv pip install --python .venv/bin/python -e '.[dev]')
 else
     mkdir -p "$WORKSPACE_DIR"
 fi
