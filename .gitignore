@@ -2,11 +2,12 @@
 .env.*
 !.env.example
 keys/authorized_keys
+keys/port_map
 keys/*.bak
 opencode/bin/*
 !opencode/bin/.gitignore
-workspace/*
-!workspace/.gitkeep
+workspaces/*
+!workspaces/.gitkeep
 *.log
 __pycache__/
 .pytest_cache/
