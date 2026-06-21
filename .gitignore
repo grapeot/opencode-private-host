@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+keys/authorized_keys
+keys/*.bak
+opencode/bin/*
+!opencode/bin/.gitignore
+workspace/*
+!workspace/.gitkeep
+*.log
+__pycache__/
+.pytest_cache/
+*.pyc

@@ -1,0 +1,39 @@
+services:
+  sshd-gateway:
+    build: ./sshd-gateway
+    container_name: sshd-gateway
+    restart: unless-stopped
+    ports:
+      - "${SSH_PORT:-8008}:22"
+    environment:
+      FORWARD_PORT: 18080
+      TARGET_HOST: opencode
+      TARGET_PORT: 4096
+    volumes:
+      - ./keys:/keys:ro
+    networks:
+      - internal
+    depends_on:
+      - opencode
+
+  opencode:
+    build: ./opencode
+    container_name: opencode
+    restart: unless-stopped
+    environment:
+      OPENCODE_AUTH_CONTENT: "${OPENCODE_AUTH_CONTENT}"
+      OPENCODE_CONFIG_CONTENT: "${OPENCODE_CONFIG_CONTENT:-}"
+    volumes:
+      - opencode-data:/data/home
+      - opencode-config:/data/config
+      - ./workspace:/workspace
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  opencode-data:
+  opencode-config:

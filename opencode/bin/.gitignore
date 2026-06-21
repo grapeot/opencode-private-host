@@ -1,0 +1,4 @@
+# 此文件用于 gitignore，实际 binary 从本地 build 产物复制。
+# 运行 scripts/build_image.sh 会自动把 binary 放到这里。
+*
+!.gitignore

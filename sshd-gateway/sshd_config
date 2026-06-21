@@ -1,0 +1,23 @@
+Port 22
+ListenAddress 0.0.0.0
+
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+PasswordAuthentication no
+PubkeyAuthentication yes
+
+PermitRootLogin no
+AllowUsers opencode
+
+AllowTcpForwarding local
+PermitTunnel no
+X11Forwarding no
+AllowAgentForwarding no
+PermitTTY no
+GatewayPorts no
+
+ForceCommand /usr/sbin/nologin
+
+AuthorizedKeysFile /keys/authorized_keys
+
+Subsystem sftp /usr/lib/ssh/sftp-server
