@@ -38,19 +38,22 @@
 onboarding 完成时必须满足这些条件：
 
 1. `.env` 存在且未进入 git；公开 `.env.example` 仍只含 fake placeholder。
-2. `docker compose config --quiet` 通过。
-3. `keys/port_map` 有第一个用户，端口默认从 `19001` 开始。
-4. `keys/authorized_keys` 有第一个用户的 `ssh-ed25519` 公钥行，并包含 `permitopen="127.0.0.1:<remotePort>"` 和 `#user:<username>`。
-5. `docker compose ps` 显示 `sshd-gateway` 和 `opencode-<username>` 均为 running。
-6. 用该 key 建立 SSH local forward 后，`curl http://127.0.0.1:<localForwardPort>/` 返回 OpenCode HTML。
-7. `ssh opencode@host true` 被 `nologin` 阻止。
-8. forward 到非授权 remotePort 被拒绝或连接 reset。
-9. 最终输出给用户的连接信息包含 Host、SSH Port、Username、Remote Port，以及下一步在 OpenCode Web UI 里连接 provider 的提醒。
+2. `docker-compose.yml` 由 `scripts/render_compose.sh` 或 `scripts/add_user.sh` 生成，未进入 git；公开 `docker-compose.yml.example` 仍只含无用户的 baseline。
+3. `docker compose config --quiet` 通过。
+4. `keys/port_map` 有第一个用户，端口默认从 `19001` 开始。
+5. `keys/authorized_keys` 有第一个用户的 `ssh-ed25519` 公钥行，并包含 `permitopen="127.0.0.1:<remotePort>"` 和 `#user:<username>`。
+6. `docker compose ps` 显示 `sshd-gateway` 和 `opencode-<username>` 均为 running。
+7. 用该 key 建立 SSH local forward 后，`curl http://127.0.0.1:<localForwardPort>/` 返回 OpenCode HTML。
+8. `ssh opencode@host true` 被 `nologin` 阻止。
+9. forward 到非授权 remotePort 被拒绝或连接 reset。
+10. 最终输出给用户的连接信息包含 Host、SSH Port、Username、Remote Port，以及下一步在 OpenCode Web UI 里连接 provider 的提醒。
 
 ## 可用资源
 
 - `.env.example`：公开模板，只能放 fake placeholder。
 - `.env`：真实本地部署配置，gitignored。
+- `docker-compose.yml.example`：公开 baseline，仅用于说明初始 compose 形态。
+- `docker-compose.yml`：真实部署状态，由脚本生成，gitignored。
 - `scripts/add_user.sh <username> <public_key_file>`：创建第一个和后续用户。
 - `scripts/render_compose.sh`：从 `keys/port_map` 生成 compose。
 - `scripts/manage_key.sh`：后续设备 key 管理。

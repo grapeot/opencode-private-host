@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+docker-compose.yml
 keys/authorized_keys
 keys/port_map
 keys/*.bak

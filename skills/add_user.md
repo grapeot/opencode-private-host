@@ -16,7 +16,7 @@
 
 ## 可用资源
 
-- docker-compose.yml（项目根目录，可读写）
+- docker-compose.yml（由 `scripts/render_compose.sh` 生成，gitignored，可读写）
 - keys/authorized_keys（项目根目录，可读写）
 - keys/port_map（端口分配表，可读写，格式 `username:port` 每行）
 - sshd-gateway/entrypoint.sh（可读写，socat 规则来源）

@@ -8,7 +8,7 @@
 - 写完 PRD、RFC、test.md
 - sshd-gateway：Dockerfile + sshd_config + entrypoint.sh
 - opencode：Dockerfile（基于 alpine + COPY 预编译 binary）
-- docker-compose.yml：双容器架构，internal network，sshd-gateway 对外暴露 SSH_PORT，opencode 不暴露端口
+- docker-compose.yml：生成态 compose 文件，internal network，sshd-gateway 对外暴露 SSH_PORT，opencode 不暴露端口；当前已改为 gitignored，公开 baseline 放在 docker-compose.yml.example
 - .env.example：1Password 引用格式（Route A），SSH 端口可配置
 - scripts：build_image.sh、deploy.sh、add_user.sh
 - 架构改为 per-user 容器：每个用户独立的 opencode 容器 + data volume + workspace，OS 级隔离
@@ -25,6 +25,7 @@
 - `sshd-gateway/Dockerfile` 解锁 `opencode` 账号的 shadow password，同时保持 `PasswordAuthentication no`，允许 key-only 登录
 - 本地 Docker E2E 通过：allowed tunnel 可访问 OpenCode HTML；exec 被 `nologin` 阻止；错误 remotePort 被 `permitopen` 拒绝
 - 新增 `skills/onboard.md`：首次部署与第一个用户引导，覆盖 `.env`、Tavily、BYOK、首个 SSH key 来源和 E2E 验收
+- 将 `docker-compose.yml` 改为 gitignored 生成文件，新增公开 `docker-compose.yml.example` baseline，避免用户把本地用户/端口状态 push 上去
 
 ## Lessons Learned
 

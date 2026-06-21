@@ -110,7 +110,7 @@ cp .env.example .env
 │   ├── rfc.md
 │   ├── working.md
 │   └── test.md
-├── docker-compose.yml
+├── docker-compose.yml.example
 ├── .env.example
 └── .gitignore
 ```
