@@ -4,19 +4,17 @@
 
 ## 架构
 
-两个 Docker 容器，通过内部网络连接：
+一个 SSH 网关容器 + 每用户一个 OpenCode 容器，通过内部网络连接：
 
 ```
 [iOS 客户端](https://github.com/grapeot/opencode_ios_client)
   │ SSH (ed25519 key auth, 非标准端口)
   ▼
 sshd-gateway 容器 (Alpine + OpenSSH + socat)
-  │ direct-tcpip → socat forward
+  │ direct-tcpip → 127.0.0.1:<remotePort> → socat
   ▼
-opencode 容器 (Alpine + 定制 opencode binary)
-  │ OPENCODE_AUTH_CONTENT (1Password 注入)
-  ▼
-OpenAI API
+opencode-<username> 容器 (Alpine + 定制 opencode binary)
+  │ 用户在 Web UI 里连接自己的 ChatGPT / provider 账号
 ```
 
 ### 安全模型
@@ -26,7 +24,9 @@ OpenAI API
 - `ForceCommand /usr/sbin/nologin` 阻止 shell/exec
 - `PermitTTY no`、`AllowAgentForwarding no`、`PermitTunnel no`
 - OpenCode 端口不映射到 host，只通过 SSH channel 可达
-- API key 通过 1Password `op run` 注入，不落盘
+- 每个用户独立 OpenCode 容器、独立 `/data` volume、独立 `workspaces/<username>`
+- Tavily key 通过 1Password `op run` 注入，不落盘
+- OpenAI / Codex 默认 BYOK：用户在 OpenCode web UI 自己连接账号
 
 ## 快速开始
 
@@ -42,13 +42,15 @@ export GHCR_USER=your-github-username
 
 ### 2. 配置 1Password
 
-在 1Password 里创建一个 Secure Note，内容是 opencode auth JSON：
+在 1Password 里保存 Tavily API key，并在 `.env` 中用 `op://...` 引用。OpenAI / Codex 默认不由运营者注入，用户进入 OpenCode web UI 后自己连接账号。
+
+可选：如果以后需要注入非 OAuth provider auth（例如 GLM / ollama-cloud），可以把 OpenCode auth JSON 放进 1Password，然后填到 `OPENCODE_AUTH_CONTENT`。
 
 ```json
-{"openai":{"type":"api","key":"sk-..."}}
+{"provider":{"type":"api","key":"provider-key"}}
 ```
 
-记录 1Password 引用路径，例如 `op://your-vault/opencode/auth_content`。
+示例引用路径：`op://your-vault/tavily/api_key`、`op://your-vault/opencode/auth_content`。
 
 ### 3. 配置 .env
 
@@ -75,10 +77,10 @@ cp .env.example .env
 在 OpenCodeClient 的 Settings > SSH Tunnel 里：
 
 - Host: VPS IP 地址
-- Port: 8008（或 .env 里配的 SSH_PORT）
+- Port: 8006（或 .env 里配的 SSH_PORT）
 - Username: opencode
-- Remote Port: 18080
-- 生成或导入 SSH key
+- Remote Port: `scripts/add_user.sh` 输出的端口（默认从 19001 开始）
+- 每台设备生成自己的 SSH key，把公钥交给运营者添加；不要共享或导出 iOS 私钥
 
 ## 文件结构
 
@@ -93,6 +95,7 @@ cp .env.example .env
 ├── keys/                # authorized_keys + port_map（gitignored）
 ├── workspaces/          # 每用户 workspace（gitignored）
 ├── skills/              # 运维 skill 文档
+│   ├── onboard.md
 │   ├── add_user.md
 │   └── key_management.md
 ├── scripts/
@@ -107,7 +110,7 @@ cp .env.example .env
 │   ├── rfc.md
 │   ├── working.md
 │   └── test.md
-├── docker-compose.yml
+├── docker-compose.yml.example
 ├── .env.example
 └── .gitignore
 ```

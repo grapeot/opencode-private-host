@@ -13,7 +13,7 @@
 ### 必须满足
 
 1. **安全认证**：用 SSH ed25519 公钥认证替代 OpenCode 内置 basic auth。每个用户有独立密钥，密钥泄露只影响容器内权限，不危及 VPS 主环境。
-2. **单端口暴露**：对外只暴露一个非标准 SSH 端口（默认 8008，可配置），不暴露任何 OpenCode HTTP 端口。
+2. **单端口暴露**：对外只暴露一个非标准 SSH 端口（默认 8006，可配置），不暴露任何 OpenCode HTTP 端口。
 3. **API key 由用户自带（BYOK）**：用户通过 OpenCode web 界面连接自己的 ChatGPT subscription，不依赖运营者提供 OpenAI key。`OPENCODE_AUTH_CONTENT` 注入机制保留在架构中，未来可用于注入非 OAuth 类 provider key（如 ollama-cloud for GLM-5.2），但不默认注入 OpenAI。用户的 OAuth token 存在各自容器的 volume 里，持久化不丢失。
 4. **隔离**：每个用户一个独立的 OpenCode Docker 容器，独立的 data volume，独立的 workspace。用户之间互不可见——不能看到对方的 session、文件、OAuth token。
 5. **权限锁定**：SSH 用户只能做一件事——forward 到自己的 OpenCode 端口。不能 exec 命令、不能开 shell、不能转发到其他目标、不能转发到其他用户的端口。

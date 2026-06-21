@@ -1,0 +1,19 @@
+services:
+  sshd-gateway:
+    build: ./sshd-gateway
+    container_name: sshd-gateway
+    restart: unless-stopped
+    ports:
+      - "${SSH_PORT:-8006}:22"
+    volumes:
+      - ./keys:/keys:ro
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  sshd-gateway-empty:
+    name: sshd-gateway-empty

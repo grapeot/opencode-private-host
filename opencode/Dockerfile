@@ -3,8 +3,8 @@ FROM alpine:latest
 RUN apk add --no-cache libgcc libstdc++ ripgrep
 
 RUN addgroup -S opencode && adduser -S -G opencode opencode \
-    && mkdir -p /data/home \
-    && chown opencode:opencode /data/home
+    && mkdir -p /data/home /data/config \
+    && chown -R opencode:opencode /data
 
 COPY bin/opencode /usr/local/bin/opencode
 RUN chmod +x /usr/local/bin/opencode
