@@ -95,6 +95,7 @@ cp .env.example .env
 ├── keys/                # authorized_keys + port_map（gitignored）
 ├── workspaces/          # 每用户 workspace（gitignored）
 ├── skills/              # 运维 skill 文档
+│   ├── onboard.md
 │   ├── add_user.md
 │   └── key_management.md
 ├── scripts/

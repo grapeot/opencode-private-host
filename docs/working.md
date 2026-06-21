@@ -24,6 +24,7 @@
 - `opencode/Dockerfile` 修复 `/data`、`/data/config` 权限，保证 named volume 首次挂载后 OpenCode 可写
 - `sshd-gateway/Dockerfile` 解锁 `opencode` 账号的 shadow password，同时保持 `PasswordAuthentication no`，允许 key-only 登录
 - 本地 Docker E2E 通过：allowed tunnel 可访问 OpenCode HTML；exec 被 `nologin` 阻止；错误 remotePort 被 `permitopen` 拒绝
+- 新增 `skills/onboard.md`：首次部署与第一个用户引导，覆盖 `.env`、Tavily、BYOK、首个 SSH key 来源和 E2E 验收
 
 ## Lessons Learned
 
