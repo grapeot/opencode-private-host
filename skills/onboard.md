@@ -20,7 +20,17 @@
 
 **部署目标**：本地测试还是 VPS。默认本地测试可以用任意空闲 SSH 端口；VPS 上默认用 `8006`。
 
-**第一个用户名**：必须匹配 `^[a-z][a-z0-9_-]*$`，例如 `alice`、`yage`、`testuser`。
+**第一个用户名**：必须匹配 `^[a-z][a-z0-9_-]*$`，例如 `alice`、`tangli`、`testuser`。
+
+这是**逻辑用户名**（写入 `keys/port_map`、容器名 `opencode-<username>`、`authorized_keys` 里的 `#user:<username>`），**不是** SSH 登录名——SSH 登录名对所有用户固定为 `opencode`。
+
+**agent 必须向运营者明确询问第一个逻辑用户名，不得擅自猜测。** 禁止从以下来源推断并直接创建用户，除非运营者在本轮对话里已经明确说出这个名字：
+
+- VPS / 服务器 hostname（例如 `yage.ai` 不代表用户名应叫 `yage`）
+- repo 路径、git 用户名、当前 shell 用户
+- skill 文档里的示例名（`alice`、`testuser` 等）
+
+若运营者尚未提供用户名，agent 应暂停并只问这一项（可附带格式说明与示例），拿到答案后再调用 `scripts/add_user.sh <username> ...`。
 
 **第一个 SSH 公钥来源**：有两种合法路径。
 
@@ -65,6 +75,8 @@ onboarding 完成时必须满足这些条件：
 
 如果用户已经给出所有信息，直接执行，不要再问确认。缺信息时，只问当前无法推进的一项或几项，不要把整个部署流程变成问卷。
 
+**用户名是必问项之一。** 即使只剩这一项未知，也要先问清楚逻辑用户名，再跑 `add_user.sh`；不要先用占位名创建、之后再 rename。
+
 本地测试时，先检查 `8006` 是否空闲。如果被占用，可以只改 gitignored `.env` 的 `SSH_PORT` 为临时端口，例如 `18006`；不要改 `.env.example` 的默认端口。
 
 如果用户直接粘贴 public key，一定只保存公钥，不保存私钥。临时 `.pub` 文件可以放在 repo 外的临时目录；如果要长期保留，放进用户明确指定的位置。不要把测试 key 放进 git。
@@ -90,3 +102,4 @@ scripts/export_host_config.sh <username> <gateway_host> "<Display Name>"
 - **VPS 首次部署最常见的 SSH 坑：`authorized_keys` UID 与 gateway 容器内 `opencode` 不一致。** 症状是公钥明明写进了 `keys/authorized_keys`，但 `ssh opencode@host` 始终 `Permission denied (publickey)`。原因是 bind mount 保留了 host 文件属主，而 OpenSSH 要求 authorized_keys 归 root 或登录用户所有。首次上线后立刻跑：`docker exec sshd-gateway id opencode` 与 `ls -ln keys/authorized_keys`，两者 uid 必须相同。详见 `skills/add_user.md` 的排查命令。
 - **GHCR 私有镜像 pull 需要 registry 认证。** 服务器上 `gh auth token` 若无 `read:packages` scope 会 pull 失败；可用 1Password 里的 GitHub package token 做 `docker login ghcr.io`，或在本地 build 后 push。
 - **1Password service account 不会自动注入 shell。** 运行 `deploy.sh` / `add_user.sh` 前需 `source ~/.config/op/service_account.env`（或等价方式设置 `OP_SERVICE_ACCOUNT_TOKEN`），否则 `op run --env-file .env` 会报 not signed in。
+- **不要替运营者选逻辑用户名。** 第一个用户叫什么必须由运营者指定；hostname、示例名、agent 上下文都不是依据。创建后 rename 需要迁移 volumes/workspace，成本远高于一开始问清楚。

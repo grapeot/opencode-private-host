@@ -4,6 +4,8 @@
 
 ### 2026-06-22
 
+- 更新 `skills/onboard.md`、`skills/add_user.md`、`skills/key_management.md`：创建/加用户前 agent 必须向运营者确认逻辑用户名，禁止从 hostname 或示例名猜测
+- `add_user.sh` / `manage_key.sh` usage 文案补充逻辑用户名说明；新增 `tests/test_add_user_usage.sh`
 - 加固 `sshd-gateway/sshd_config`：禁用 keyboard-interactive / challenge-response / empty password，强制 publickey，限制认证重试、登录窗口、session 数和 startup burst，关闭 StreamLocalForwarding、user env/user rc，移除 SFTP subsystem
 - `manage_key.sh` 改为生成 `restrict,port-forwarding,permitopen=...` key options，让 OpenSSH 默认关闭 shell/pty/X11/agent/user-rc 等能力，只显式放行端口转发
 - 修复 `sshd-gateway`：`opencode` 容器用户固定 UID/GID 1001，与 host 上 `keys/authorized_keys` bind mount 属主一致，否则 OpenSSH 会静默忽略公钥

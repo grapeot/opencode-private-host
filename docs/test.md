@@ -94,6 +94,7 @@ ssh -p 8006 -i <key> -o ConnectTimeout=10 opencode@<VPS_IP>
 tests/test_manage_key.sh
 tests/test_export_host_config.sh
 tests/test_add_user_host_config.sh
+tests/test_add_user_usage.sh
 ```
 
 容器 E2E 仍偏手工，因为需要 Docker、1Password CLI、SSH 客户端和本地可用端口。后续如果加 enrollment service，需要补 API 测试。
