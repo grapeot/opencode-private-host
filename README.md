@@ -30,9 +30,11 @@ opencode-<username> 容器 (Alpine + 定制 opencode binary)
 
 ## 快速开始
 
-### 1. 构建 opencode 镜像
+### 1. 选择 opencode 镜像
 
-需要本地有 `opencode-official` checkout（`private-dev-squashed` 分支）。
+普通部署直接使用 `.env` 里的 `OPENCODE_IMAGE`，不需要本地 `opencode-official` checkout，也不需要从源码构建 OpenCode。
+
+只有维护者要重建并 push GHCR 镜像时，才需要本地 `opencode-official` checkout（`private-dev-squashed` 分支）：
 
 ```bash
 export OPENCODE_CHECKOUT=/path/to/opencode-official
@@ -107,7 +109,7 @@ iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host
 │   ├── add_user.md
 │   └── key_management.md
 ├── scripts/
-│   ├── build_image.sh   # 构建 + push 镜像
+│   ├── build_image.sh   # 维护者重建 + push OpenCode 镜像
 │   ├── deploy.sh        # 1Password 注入 + docker compose up
 │   ├── add_user.sh      # 添加用户（容器+volume+workspace+key）
 │   ├── remove_user.sh   # 删除用户

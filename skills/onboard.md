@@ -68,7 +68,7 @@ onboarding 完成时必须满足这些条件：
 - `scripts/render_compose.sh`：从 `keys/port_map` 生成 compose。
 - `scripts/manage_key.sh`：后续设备 key 管理。
 - `scripts/export_host_config.sh`：输出 iOS 可导入的 Host Config JSON，不包含 secret。
-- `scripts/build_image.sh`：只有需要重建 GHCR 镜像时才用。
+- `scripts/build_image.sh`：维护者重建 GHCR 镜像时才用；普通部署和测试不需要本地 OpenCode 源码 checkout。
 - `docs/test.md`：手工 E2E 验证命令参考。
 
 ## 推荐执行策略
@@ -101,5 +101,6 @@ scripts/export_host_config.sh <username> <gateway_host> "<Display Name>"
 - OpenAI / Codex OAuth token 属于用户个人账号状态，默认让用户在 OpenCode Web UI 中自己连接。
 - **VPS 首次部署最常见的 SSH 坑：`authorized_keys` UID 与 gateway 容器内 `opencode` 不一致。** 症状是公钥明明写进了 `keys/authorized_keys`，但 `ssh opencode@host` 始终 `Permission denied (publickey)`。原因是 bind mount 保留了 host 文件属主，而 OpenSSH 要求 authorized_keys 归 root 或登录用户所有。首次上线后立刻跑：`docker exec sshd-gateway id opencode` 与 `ls -ln keys/authorized_keys`，两者 uid 必须相同。详见 `skills/add_user.md` 的排查命令。
 - **GHCR 私有镜像 pull 需要 registry 认证。** 服务器上 `gh auth token` 若无 `read:packages` scope 会 pull 失败；可用 1Password 里的 GitHub package token 做 `docker login ghcr.io`，或在本地 build 后 push。
+- **不要把首次部署和镜像维护混在一起。** 首次部署默认 pull `OPENCODE_IMAGE`，不从 `opencode-official` 源码构建；只有维护镜像内容时才运行 `scripts/build_image.sh`。
 - **1Password service account 不会自动注入 shell。** 运行 `deploy.sh` / `add_user.sh` 前需 `source ~/.config/op/service_account.env`（或等价方式设置 `OP_SERVICE_ACCOUNT_TOKEN`），否则 `op run --env-file .env` 会报 not signed in。
 - **不要替运营者选逻辑用户名。** 第一个用户叫什么必须由运营者指定；hostname、示例名、agent 上下文都不是依据。创建后 rename 需要迁移 volumes/workspace，成本远高于一开始问清楚。
