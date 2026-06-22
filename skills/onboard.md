@@ -29,7 +29,7 @@
 
 **Tavily 是否启用**：如果启用，`.env` 里需要 `TAVILY_API_KEY`，建议使用 1Password 引用，例如 `op://your-vault/tavily/api_key`。如果不用 Tavily，允许留空，但要明确告知用户：workspace 仍会 clone tavily skill，调用时会因为没有 key 而不可用。
 
-**OpenCode provider auth**：默认 BYOK，不注入 OpenAI / Codex。用户进入 OpenCode Web UI 后自己连接 ChatGPT / provider 账号。只有当用户明确要注入非 OAuth provider key 时，才配置 `OPENCODE_AUTH_CONTENT`。
+**OpenCode provider auth**：默认 BYOK，不注入 OpenAI / Codex。首次用户创建后，agent 必须提醒管理员：需要用这个用户的 SSH tunnel 打开 OpenCode Web UI，并完成第一次 ChatGPT / provider 连接；iOS native client 只负责连接已经可用的 OpenCode server。只有当用户明确要注入非 OAuth provider key 时，才配置 `OPENCODE_AUTH_CONTENT`。
 
 **镜像来源**：默认用 `OPENCODE_IMAGE=ghcr.io/grapeot/opencode-private:latest`。如果 fork 后自建镜像，则改成对应 GHCR path。不要让首次用户临时从源码 build OpenCode，除非当前任务就是维护镜像。
 
@@ -46,7 +46,7 @@ onboarding 完成时必须满足这些条件：
 7. 用该 key 建立 SSH local forward 后，`curl http://127.0.0.1:<localForwardPort>/` 返回 OpenCode HTML。
 8. `ssh opencode@host true` 被 `nologin` 阻止。
 9. forward 到非授权 remotePort 被拒绝或连接 reset。
-10. 最终输出给用户的连接信息包含 Host、SSH Port、Username、Remote Port，以及下一步在 OpenCode Web UI 里连接 provider 的提醒。
+10. 最终输出给管理员的连接信息包含 Host、SSH Port、Username、Remote Port，以及“先通过 Web UI 完成 provider auth，再让 iOS native client 使用”的提醒。
 
 ## 可用资源
 
@@ -69,6 +69,8 @@ onboarding 完成时必须满足这些条件：
 如果用户直接粘贴 public key，一定只保存公钥，不保存私钥。临时 `.pub` 文件可以放在 repo 外的临时目录；如果要长期保留，放进用户明确指定的位置。不要把测试 key 放进 git。
 
 如果 `scripts/add_user.sh` 默认 workspace 初始化耗时太长，本地 smoke test 可以用 `SKIP_WORKSPACE_INIT=1`。正式 VPS onboarding 应该跑完整 workspace 初始化，确保 `context-infrastructure` 和 `tavily-skill` 都存在。
+
+第一个用户启动后，管理员需要先完成 provider auth 验证：用该用户 key 建立 tunnel，访问 `http://127.0.0.1:<localForwardPort>`，在 OpenCode Web UI 中连接 ChatGPT / provider。这个动作完成前，iOS native client 可以连上 server，但发起需要 provider 的对话可能失败。
 
 ## 已知陷阱
 
