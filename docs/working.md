@@ -26,6 +26,7 @@
 - 本地 Docker E2E 通过：allowed tunnel 可访问 OpenCode HTML；exec 被 `nologin` 阻止；错误 remotePort 被 `permitopen` 拒绝
 - 新增 `skills/onboard.md`：首次部署与第一个用户引导，覆盖 `.env`、Tavily、BYOK、首个 SSH key 来源和 E2E 验收
 - 将 `docker-compose.yml` 改为 gitignored 生成文件，新增公开 `docker-compose.yml.example` baseline，避免用户把本地用户/端口状态 push 上去
+- 更新 `skills/onboard.md`：明确 provider auth 是管理员在 OpenCode Web UI 中完成的首次验证步骤，iOS native client 只连接已经可用的 OpenCode server
 
 ## Lessons Learned
 
