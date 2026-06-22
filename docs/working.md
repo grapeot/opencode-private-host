@@ -27,6 +27,9 @@
 - 新增 `skills/onboard.md`：首次部署与第一个用户引导，覆盖 `.env`、Tavily、BYOK、首个 SSH key 来源和 E2E 验收
 - 将 `docker-compose.yml` 改为 gitignored 生成文件，新增公开 `docker-compose.yml.example` baseline，避免用户把本地用户/端口状态 push 上去
 - 更新 `skills/onboard.md`：明确 provider auth 是管理员在 OpenCode Web UI 中完成的首次验证步骤，iOS native client 只连接已经可用的 OpenCode server
+- 新增 `scripts/export_host_config.sh`：管理员可从 `keys/port_map` 和 `.env` 导出 iOS Host Config JSON，不包含 SSH 私钥、Basic Auth 密码、provider token 或 1Password 引用
+- 更新 `scripts/add_user.sh`：支持可选 `gateway_host` / `display_name`，创建用户后现场输出 iOS 可导入 JSON；未提供 gateway 时输出后续导出命令
+- 新增 `tests/test_export_host_config.sh` 和 `tests/test_add_user_host_config.sh`，覆盖 Host Config 导出和 add_user 集成输出
 
 ## Lessons Learned
 

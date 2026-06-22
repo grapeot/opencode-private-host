@@ -43,6 +43,9 @@ scripts/manage_key.sh remove <username> <public_key_file>
 
 # 验证某个公钥是否已在 authorized_keys 里
 scripts/manage_key.sh verify <username> <public_key_file>
+
+# 导出 iOS 可导入的 Host Config JSON（不含 secret）
+scripts/export_host_config.sh <username> <gateway_host> [display_name]
 ```
 
 ### 行为细节
@@ -55,6 +58,8 @@ scripts/manage_key.sh verify <username> <public_key_file>
 
 `verify` 退出码 0 表示 key 已存在，退出码 1 表示 key 不存在但用户存在，退出码 2 表示用户不存在。
 
+`export_host_config` 只读 `keys/port_map` 和 `.env` 里的 `SSH_PORT`，输出 iOS `Import Host Config` 可粘贴 JSON。JSON 只包含 name、transport、gateway host、SSH port、SSH username 和 remotePort；不包含 SSH 私钥、Basic Auth 密码、provider token 或任何 1Password 引用。
+
 ### 多设备工作流
 
 用户在电脑上生成 SSH key：`ssh-keygen -t ed25519`。把公钥发给运营者，运营者执行：
@@ -62,6 +67,14 @@ scripts/manage_key.sh verify <username> <public_key_file>
 ```bash
 scripts/manage_key.sh add alice /path/to/alice_macbook_ed25519.pub
 ```
+
+然后运营者给用户一段 Host Config JSON：
+
+```bash
+scripts/export_host_config.sh alice gateway.example.invalid "Alice OpenCode"
+```
+
+用户在 iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host Config，点 Import Host Config，再保存。每台设备仍然使用自己生成的 SSH 私钥；导入配置不会带入任何 secret。
 
 之后用户就可以从电脑上用这把 key 访问自己的 OpenCode 容器。iOS 客户端用另一把 key，两把 key 独立，互不影响。设备丢失时：
 

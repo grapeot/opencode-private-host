@@ -57,6 +57,7 @@ onboarding 完成时必须满足这些条件：
 - `scripts/add_user.sh <username> <public_key_file>`：创建第一个和后续用户。
 - `scripts/render_compose.sh`：从 `keys/port_map` 生成 compose。
 - `scripts/manage_key.sh`：后续设备 key 管理。
+- `scripts/export_host_config.sh`：输出 iOS 可导入的 Host Config JSON，不包含 secret。
 - `scripts/build_image.sh`：只有需要重建 GHCR 镜像时才用。
 - `docs/test.md`：手工 E2E 验证命令参考。
 
@@ -71,6 +72,14 @@ onboarding 完成时必须满足这些条件：
 如果 `scripts/add_user.sh` 默认 workspace 初始化耗时太长，本地 smoke test 可以用 `SKIP_WORKSPACE_INIT=1`。正式 VPS onboarding 应该跑完整 workspace 初始化，确保 `context-infrastructure` 和 `tavily-skill` 都存在。
 
 第一个用户启动后，管理员需要先完成 provider auth 验证：用该用户 key 建立 tunnel，访问 `http://127.0.0.1:<localForwardPort>`，在 OpenCode Web UI 中连接 ChatGPT / provider。这个动作完成前，iOS native client 可以连上 server，但发起需要 provider 的对话可能失败。
+
+给 iOS 用户配置连接时，管理员运行：
+
+```bash
+scripts/export_host_config.sh <username> <gateway_host> "<Display Name>"
+```
+
+把输出 JSON 发给用户。用户在 iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host Config，点 Import Host Config，再保存。这个 JSON 不包含 SSH 私钥、Basic Auth 密码或 provider token；SSH key 仍然由每台设备本地生成，并通过 `scripts/manage_key.sh add` 加入 authorized_keys。
 
 ## 已知陷阱
 
