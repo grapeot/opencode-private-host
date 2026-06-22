@@ -4,7 +4,7 @@
 
 ### 1. 容器构建验证
 
-sshd-gateway 镜像能 build 成功，opencode 镜像能 build 成功（需要先有 binary）。OpenCode 镜像固定按 `linux/amd64` 构建，因为当前打包的是 `opencode-linux-x64-baseline-musl`。
+sshd-gateway 镜像能 build 成功，compose 能解析并使用 `OPENCODE_IMAGE` 指定的 OpenCode 镜像。普通部署和自动化 shell 测试不需要 `opencode-official` checkout；只有运行 `scripts/build_image.sh` 重建 OpenCode GHCR 镜像时，才需要本地源码 checkout 和预编译 binary。OpenCode 镜像固定按 `linux/amd64` 构建，因为当前打包的是 `opencode-linux-x64-baseline-musl`。
 
 ```bash
 docker compose build
@@ -88,7 +88,7 @@ ssh -p 8006 -i <key> -o ConnectTimeout=10 opencode@<VPS_IP>
 
 ## 自动化测试
 
-当前有 shell 自动化覆盖 key 管理、Host Config 导出和 add_user 输出：
+当前有 shell 自动化覆盖 key 管理、Host Config 导出和 add_user 输出。这些测试只操作临时目录和脚本输出，不需要 Docker、1Password、OpenCode binary 或 `opencode-official` checkout：
 
 ```bash
 tests/test_manage_key.sh

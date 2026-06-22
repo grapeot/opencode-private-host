@@ -131,7 +131,7 @@ entrypoint.sh 动态生成 socat 规则：扫描 authorized_keys 里的 `permito
 
 基镜像：`alpine:latest`。安装 `libgcc libstdc++ ripgrep`（和官方 Dockerfile 一致）。
 
-binary 来源：从 `opencode-official` 的 `private-dev-squashed` 分支本地编译，COPY 进镜像。
+binary 来源：普通部署从 `OPENCODE_IMAGE` 指定的 GHCR 镜像 pull，不需要本地 OpenCode 源码 checkout。维护者重建镜像时，`scripts/build_image.sh` 会从 `opencode-official` 的 `private-dev-squashed` 分支本地编译 binary，再 COPY 进镜像并 push。
 
 认证注入：`OPENCODE_AUTH_CONTENT` 环境变量（可选，用于注入非 OAuth 类 provider key 如 GLM-5.2）。OpenAI 认证由用户通过 OpenCode web 界面自行完成（ChatGPT OAuth），token 存在容器 volume 里。OpenCode 内置 basic auth 关闭（不设 `OPENCODE_SERVER_PASSWORD`），SSH key 是唯一入口认证。
 
@@ -201,7 +201,7 @@ Route A 的已知边界：VPS 被入侵后攻击者能从 `/proc/<pid>/environ` 
 
 ## 镜像分发
 
-本地 build → push 到 GHCR（GitHub Container Registry）→ VPS pull。
+普通部署路径是 VPS 直接 pull `OPENCODE_IMAGE` 指定的 GHCR 镜像。只有维护者更新镜像内容时，才走本地 build → push 到 GHCR（GitHub Container Registry）→ VPS pull。
 
 1. 在 `opencode-official` checkout 的 `private-dev-squashed` 分支执行 `bun run build -- --single --skip-install --target linux-x64-baseline-musl`
 2. 复制 binary 到 `opencode/bin/opencode`
