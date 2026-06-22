@@ -4,20 +4,34 @@ ListenAddress 0.0.0.0
 HostKey /etc/ssh/ssh_host_ed25519_key
 
 PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+PermitEmptyPasswords no
 PubkeyAuthentication yes
+AuthenticationMethods publickey
 
 PermitRootLogin no
 AllowUsers opencode
 
 AllowTcpForwarding local
+AllowStreamLocalForwarding no
 PermitTunnel no
 X11Forwarding no
 AllowAgentForwarding no
 PermitTTY no
 GatewayPorts no
+PermitUserEnvironment no
+PermitUserRC no
+
+MaxAuthTries 3
+LoginGraceTime 20
+MaxSessions 2
+MaxStartups 10:30:30
+TCPKeepAlive no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LogLevel VERBOSE
 
 ForceCommand /usr/sbin/nologin
 
 AuthorizedKeysFile /keys/authorized_keys
-
-Subsystem sftp /usr/lib/ssh/sftp-server

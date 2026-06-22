@@ -119,8 +119,8 @@ AuthorizedKeysFile /keys/authorized_keys
 authorized_keys 格式（每行一个用户，端口不同）：
 
 ```
-permitopen="127.0.0.1:19001",no-pty,no-X11-forwarding,no-agent-forwarding ssh-ed25519 AAAA... #user:alice
-permitopen="127.0.0.1:19002",no-pty,no-X11-forwarding,no-agent-forwarding ssh-ed25519 BBBB... #user:bob
+restrict,port-forwarding,permitopen="127.0.0.1:19001" ssh-ed25519 AAAA... #user:alice
+restrict,port-forwarding,permitopen="127.0.0.1:19002" ssh-ed25519 BBBB... #user:bob
 ```
 
 entrypoint.sh 动态生成 socat 规则：扫描 authorized_keys 里的 `permitopen` 端口，为每个端口启动一个 socat 实例 forward 到对应的 `opencode-<user>:4096`。这样加用户时只需要追加 authorized_keys 一行 + compose 加一个 service，entrypoint 重启后自动起 socat。

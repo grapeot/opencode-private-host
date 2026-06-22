@@ -56,7 +56,7 @@ scripts/add_user.sh <username> <public_key_file> [gateway_host] [display_name]
 6. `git clone https://github.com/grapeot/context-infrastructure workspaces/<username>`（浅克隆，`--depth 1`）。
 7. `git clone https://github.com/grapeot/tavily-skill workspaces/<username>/adhoc_jobs/tavily_skill`（浅克隆）。
 8. 在 tavily_skill 目录创建 `.venv` 并安装：`uv pip install -e '.[dev]'`（需要 VPS 有 Python + uv）。
-9. 调用 `scripts/manage_key.sh add <username> <public_key_file>` 写入该用户行（`permitopen="127.0.0.1:<port>",no-pty,no-X11-forwarding,no-agent-forwarding <pubkey> #user:<username>`）。
+9. 调用 `scripts/manage_key.sh add <username> <public_key_file>` 写入该用户行（`restrict,port-forwarding,permitopen="127.0.0.1:<port>" <pubkey> #user:<username>`）。
 10. 调用 `scripts/render_compose.sh` 从 `keys/port_map` 重新生成 `docker-compose.yml`。
 11. `op run --env-file .env -- docker compose up -d --build --remove-orphans`（启动新容器 + 重启 sshd-gateway 让 socat 生效）。
 12. 输出连接信息：SSH user 固定为 `opencode`，remotePort 为分配端口。

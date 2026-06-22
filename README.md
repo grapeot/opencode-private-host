@@ -20,7 +20,7 @@ opencode-<username> 容器 (Alpine + 定制 opencode binary)
 ### 安全模型
 
 - SSH 公钥认证替代 HTTP basic auth
-- `authorized_keys` 每行用 `permitopen` 限制只能 forward 到 OpenCode 端口
+- `authorized_keys` 每行用 `restrict,port-forwarding,permitopen=...` 限制只能 forward 到 OpenCode 端口
 - `ForceCommand /usr/sbin/nologin` 阻止 shell/exec
 - `PermitTTY no`、`AllowAgentForwarding no`、`PermitTunnel no`
 - OpenCode 端口不映射到 host，只通过 SSH channel 可达
