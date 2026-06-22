@@ -4,6 +4,8 @@
 
 ### 2026-06-22
 
+- 加固 `sshd-gateway/sshd_config`：禁用 keyboard-interactive / challenge-response / empty password，强制 publickey，限制认证重试、登录窗口、session 数和 startup burst，关闭 StreamLocalForwarding、user env/user rc，移除 SFTP subsystem
+- `manage_key.sh` 改为生成 `restrict,port-forwarding,permitopen=...` key options，让 OpenSSH 默认关闭 shell/pty/X11/agent/user-rc 等能力，只显式放行端口转发
 - 修复 `sshd-gateway`：`opencode` 容器用户固定 UID/GID 1001，与 host 上 `keys/authorized_keys` bind mount 属主一致，否则 OpenSSH 会静默忽略公钥
 - `manage_key.sh` 写入后自动 `chmod 600 authorized_keys`、`chmod 755 keys/`
 - 更新 `skills/add_user.md`、`skills/onboard.md`、`skills/key_management.md`：补充 authorized_keys uid/权限排查与 GHCR、1Password service account 注意事项

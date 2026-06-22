@@ -39,7 +39,9 @@ assert_not_contains() {
 
 run add alice "$TMP/alice_phone.pub"
 assert_contains '#user:alice$' "$TMP/keys/authorized_keys"
+assert_contains 'restrict,port-forwarding' "$TMP/keys/authorized_keys"
 assert_contains 'permitopen="127.0.0.1:19001"' "$TMP/keys/authorized_keys"
+assert_not_contains 'no-pty' "$TMP/keys/authorized_keys"
 
 run add alice "$TMP/alice_mac.pub"
 [ "$(grep -c '#user:alice$' "$TMP/keys/authorized_keys")" -eq 2 ]

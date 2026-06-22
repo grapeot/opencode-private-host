@@ -71,7 +71,7 @@ add_key() {
         return 0
     fi
 
-    printf 'permitopen="127.0.0.1:%s",no-pty,no-X11-forwarding,no-agent-forwarding %s #user:%s\n' "$port" "$pubkey" "$user" >> "$AUTH_FILE"
+    printf 'restrict,port-forwarding,permitopen="127.0.0.1:%s" %s #user:%s\n' "$port" "$pubkey" "$user" >> "$AUTH_FILE"
     chmod 600 "$AUTH_FILE"
     chmod 755 "$(dirname "$AUTH_FILE")"
     echo "已添加 key: $user"
