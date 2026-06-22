@@ -18,8 +18,8 @@ docker compose build
 # 生成测试 key
 ssh-keygen -t ed25519 -f /tmp/test_key -N ""
 
-# 添加用户但跳过 workspace clone 和自动启动，便于本地快速 E2E
-SKIP_WORKSPACE_INIT=1 SKIP_DOCKER_UP=1 scripts/add_user.sh testuser /tmp/test_key.pub
+# 添加用户但跳过 workspace clone 和自动启动，便于本地快速 E2E；最后一个参数会输出 iOS Host Config JSON
+SKIP_WORKSPACE_INIT=1 SKIP_DOCKER_UP=1 scripts/add_user.sh testuser /tmp/test_key.pub localhost "Test OpenCode"
 
 # 启动
 op run --env-file .env -- docker compose up -d --build --remove-orphans
@@ -74,14 +74,16 @@ ssh -p 8006 -i <key> -o ConnectTimeout=10 opencode@<VPS_IP>
 
 ### 6. iOS 客户端端到端验证（手工）
 
-在 iOS app 的 SSH Tunnel 设置里配好 VPS 地址、端口、用户名、remotePort，连接后能正常对话。
+管理员用 `scripts/add_user.sh <username> <pubkey> <gateway_host> "<Display Name>"` 或 `scripts/export_host_config.sh <username> <gateway_host> "<Display Name>"` 输出 Host Config JSON。用户在 iOS app 里进入 Settings -> Current Host -> Add Host，把 JSON 粘贴到 Import Host Config，保存后连接。导入配置不包含 SSH 私钥、Basic Auth 密码或 provider token。
 
 ## 自动化测试
 
-当前有 shell 自动化覆盖 key 管理 CLI：
+当前有 shell 自动化覆盖 key 管理、Host Config 导出和 add_user 输出：
 
 ```bash
 tests/test_manage_key.sh
+tests/test_export_host_config.sh
+tests/test_add_user_host_config.sh
 ```
 
 容器 E2E 仍偏手工，因为需要 Docker、1Password CLI、SSH 客户端和本地可用端口。后续如果加 enrollment service，需要补 API 测试。

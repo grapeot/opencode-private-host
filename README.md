@@ -82,6 +82,14 @@ cp .env.example .env
 - Remote Port: `scripts/add_user.sh` 输出的端口（默认从 19001 开始）
 - 每台设备生成自己的 SSH key，把公钥交给运营者添加；不要共享或导出 iOS 私钥
 
+也可以由管理员导出 iOS Host Config JSON：
+
+```bash
+./scripts/export_host_config.sh alice gateway.example.invalid "Alice OpenCode"
+```
+
+iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host Config，点 Import Host Config，再保存。这个 JSON 不包含 SSH 私钥、Basic Auth 密码或 provider token。
+
 ## 文件结构
 
 ```

@@ -25,6 +25,7 @@
 - tavily skill 公开 repo：`https://github.com/grapeot/tavily-skill`
 - Docker + Docker Compose v2
 - op run（1Password CLI，用于注入 API key 启动容器）
+- `scripts/export_host_config.sh`（生成 iOS 可导入 Host Config JSON）
 
 ## 验收标准
 
@@ -40,8 +41,10 @@
 ## CLI 设计
 
 ```bash
-scripts/add_user.sh <username> <public_key_file>
+scripts/add_user.sh <username> <public_key_file> [gateway_host] [display_name]
 ```
+
+如果传入 `gateway_host`，脚本会在创建用户后直接输出 iOS `Import Host Config` 可粘贴 JSON。这个 JSON 不含 SSH 私钥、Basic Auth 密码、provider token 或 1Password 引用。
 
 ### CLI 执行步骤
 
@@ -57,6 +60,11 @@ scripts/add_user.sh <username> <public_key_file>
 10. 调用 `scripts/render_compose.sh` 从 `keys/port_map` 重新生成 `docker-compose.yml`。
 11. `op run --env-file .env -- docker compose up -d --build --remove-orphans`（启动新容器 + 重启 sshd-gateway 让 socat 生效）。
 12. 输出连接信息：SSH user 固定为 `opencode`，remotePort 为分配端口。
+13. 如果管理员提供了 `gateway_host`，调用 `scripts/export_host_config.sh` 输出 iOS Host Config JSON；否则输出后续可执行的导出命令。
+
+### 管理员输出给用户
+
+新用户创建完成后，管理员把脚本输出里的 `iOS Host Config JSON` 发给用户。用户在 iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘贴到 Import Host Config，点 Import Host Config，再保存。用户仍需先在 iOS 生成设备公钥并交给管理员；JSON 只描述连接参数，不携带 secret。
 
 ### opencode service 模板
 

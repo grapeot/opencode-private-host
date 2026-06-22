@@ -2,14 +2,16 @@
 # 创建一个隔离的 OpenCode 用户：port_map + workspace + authorized_keys + compose service。
 set -euo pipefail
 
-if [ $# -lt 2 ]; then
-    echo "用法: $0 <username> <public_key_file>"
-    echo "示例: $0 alice /path/to/alice_ed25519.pub"
+if [ $# -lt 2 ] || [ $# -gt 4 ]; then
+    echo "用法: $0 <username> <public_key_file> [gateway_host] [display_name]"
+    echo "示例: $0 alice /path/to/alice_ed25519.pub gateway.example.invalid \"Alice OpenCode\""
     exit 1
 fi
 
 USERNAME="$1"
 KEY_FILE="$2"
+GATEWAY_HOST="${3:-}"
+DISPLAY_NAME="${4:-$USERNAME OpenCode}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="${PROJECT_DIR:-$(dirname "$SCRIPT_DIR")}" # project root
 PORT_MAP="$PROJECT_DIR/keys/port_map"
@@ -61,3 +63,12 @@ fi
 echo "已添加用户 $USERNAME"
 echo "SSH user: opencode"
 echo "Remote port: $PORT"
+if [ -n "$GATEWAY_HOST" ]; then
+    echo ""
+    echo "iOS Host Config JSON:"
+    PROJECT_DIR="$PROJECT_DIR" "$SCRIPT_DIR/export_host_config.sh" "$USERNAME" "$GATEWAY_HOST" "$DISPLAY_NAME"
+else
+    echo ""
+    echo "生成 iOS Host Config JSON:"
+    echo "  scripts/export_host_config.sh $USERNAME <gateway_host> \"$DISPLAY_NAME\""
+fi
