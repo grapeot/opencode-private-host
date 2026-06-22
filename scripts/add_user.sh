@@ -5,6 +5,11 @@ set -euo pipefail
 if [ $# -lt 2 ] || [ $# -gt 4 ]; then
     echo "用法: $0 <username> <public_key_file> [gateway_host] [display_name]"
     echo "示例: $0 alice /path/to/alice_ed25519.pub gateway.example.invalid \"Alice OpenCode\""
+    echo ""
+    echo "<username> 是逻辑用户名（写入 keys/port_map、容器 opencode-<username>），"
+    echo "由运营者指定，格式 ^[a-z][a-z0-9_-]*$。不是 SSH 登录名 opencode。"
+    echo "创建前请向运营者确认用户名，不要从 hostname 或示例名猜测。"
+    echo "现有用户: cat keys/port_map"
     exit 1
 fi
 

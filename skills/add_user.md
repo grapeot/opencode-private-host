@@ -12,7 +12,20 @@
 
 **做什么**：创建 compose service、socat 规则、数据 volume、workspace（clone context-infrastructure + 装 tavily skill）、authorized_keys 条目、端口分配、启动容器。
 
-**不做什么**：不处理用户自助注册；不帮用户生成 SSH key（每台设备生成自己的 key 后提供公钥）；不配置 1Password（1Password 由运营者预先配好，Tavily key 共享注入）；不注入 OpenAI / Codex OAuth token（用户自己在 OpenCode web UI 里连接账号）。
+**不做什么**：不处理用户自助注册；不帮用户生成 SSH key（每台设备生成自己的 key 后提供公钥）；不配置 1Password（1Password 由运营者预先配好，Tavily key 共享注入）；不注入 OpenAI / Codex OAuth token（用户自己在 OpenCode web UI 里连接账号）；**不替运营者选择或猜测逻辑用户名**。
+
+## 开始前必问
+
+每次添加**新**用户（不是给已有用户加设备 key）之前，agent 必须向运营者确认：
+
+1. **逻辑用户名是什么？** 格式 `^[a-z][a-z0-9_-]*$`；会写入 `keys/port_map`、创建 `opencode-<username>` 容器与 `workspaces/<username>/`。
+2. **第一把设备的 ssh-ed25519 公钥**（或公钥文件路径）。
+
+若对话里还没有明确用户名，agent 应暂停并询问；**不要**从 hostname、示例名、服务器名推断。已有用户列表见 `keys/port_map`（或 `cat keys/port_map`），创建前可读出给用户确认没有重名。
+
+逻辑用户名 ≠ SSH 登录名。SSH 登录名对所有用户始终是 `opencode`；iOS Host Config 里的 `username` 也是 `opencode`。逻辑用户名只用于服务端隔离与运维 CLI 的第一个参数。
+
+给**已有**用户加新设备 key 时不走本 skill，改看 `skills/key_management.md`——那时要问的是「给哪个已有用户加 key」，同样不要猜。
 
 ## 可用资源
 
@@ -94,6 +107,7 @@ scripts/add_user.sh <username> <public_key_file> [gateway_host] [display_name]
 - `opencode web` 在容器里会尝试 `xdg-open` 并打印错误，但当前不影响服务继续运行。
 - **`keys/authorized_keys` 属主必须与 sshd-gateway 容器内 `opencode` 用户 UID 一致。** 公钥文件由 VPS 上的部署用户创建（例如 uid 1001），而 `AuthorizedKeysFile /keys/authorized_keys` 是 bind mount。OpenSSH 只接受属主为 root 或登录用户的 authorized_keys；UID 不匹配时会**静默忽略**整文件，客户端只看到 `Permission denied (publickey)`，sshd 日志里往往没有明显报错。`sshd-gateway/Dockerfile` 已把容器内 `opencode` 固定为 UID/GID 1001（与常见 VPS 部署用户一致）；若你的部署用户 uid 不同，改 Dockerfile 里的 uid/gid 后 `--build` 重建 gateway。
 - **`keys/` 与 `authorized_keys` 权限必须满足 OpenSSH 要求。** 目录不能 group-writable（推荐 `755`），文件不能 group/world-writable（推荐 `600`）。`scripts/manage_key.sh add` 写入后会自动修正；若手工编辑过 keys，可用 `chmod 755 keys && chmod 600 keys/authorized_keys` 修复。
+- **逻辑用户名必须运营者指定。** agent 不要用 hostname 或文档示例代替；创建后改名需迁移 volume/workspace，应在一开始问清楚。
 
 ### SSH 公钥登录失败时的快速排查
 

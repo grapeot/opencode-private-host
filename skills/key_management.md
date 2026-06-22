@@ -12,7 +12,16 @@
 
 **做什么**：按 `#user:<username>` 标记定位行，执行增删查。同一个用户可以有多行（多设备）。
 
-**不做什么**：不创建/删除 Docker 容器（那是 add_user / remove_user 的职责）；不修改 port_map；不重启容器（authorized_keys 变更不需要重启，OpenSSH 每次连接重读文件）。
+**不做什么**：不创建/删除 Docker 容器（那是 add_user / remove_user 的职责）；不修改 port_map；不重启容器（authorized_keys 变更不需要重启，OpenSSH 每次连接重读文件）；**不猜测逻辑用户名**。
+
+## 开始前必问
+
+`manage_key.sh` 的每个子命令都需要 `<username>`（逻辑用户名，不是 SSH 登录名 `opencode`）。
+
+- 若系统里**只有一个**用户，仍应向运营者确认「是给 `<port_map 里那一行>` 这个用户加 key 吗？」，不要 silent 假设。
+- 若**多个**用户，必须先列出 `keys/port_map` 或运行 `scripts/manage_key.sh list <candidate>`，请运营者指明给哪个用户加/删 key。
+
+创建全新用户（新容器、新 workspace）不走本 skill，应使用 `scripts/add_user.sh`，并先按 `skills/add_user.md` 问清逻辑用户名。
 
 ## 可用资源
 

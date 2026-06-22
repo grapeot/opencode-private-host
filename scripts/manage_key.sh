@@ -14,6 +14,9 @@ usage() {
   scripts/manage_key.sh add <username> <public_key_file>
   scripts/manage_key.sh remove <username> <public_key_file>
   scripts/manage_key.sh verify <username> <public_key_file>
+
+<username> 是逻辑用户名（见 keys/port_map），不是 SSH 登录名 opencode。
+现有用户: cat keys/port_map
 EOF
 }
 
