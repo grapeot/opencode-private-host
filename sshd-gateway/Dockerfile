@@ -2,7 +2,10 @@ FROM alpine:latest
 
 RUN apk add --no-cache openssh socat
 
-RUN addgroup -S opencode && adduser -S -G opencode opencode \
+# keys/authorized_keys bind mount 保留 host 文件 uid。OpenSSH 只接受属主为 root
+# 或登录用户 (opencode) 的 AuthorizedKeysFile；uid 不匹配会静默忽略公钥。
+# 默认 1001 与常见 VPS 部署用户一致；若 `id -u` 不同，改此处 uid/gid 后 rebuild。
+RUN addgroup -S -g 1001 opencode && adduser -S -G opencode -u 1001 opencode \
     && passwd -d opencode \
     && mkdir -p /home/opencode/.ssh \
     && chown opencode:opencode /home/opencode/.ssh \

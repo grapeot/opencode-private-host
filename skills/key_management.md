@@ -105,3 +105,5 @@ scripts/manage_key.sh remove alice /path/to/lost_device_ed25519.pub
 - `manage_key.sh add` 要求用户已经存在于 `keys/port_map`，用户创建由 `scripts/add_user.sh` 负责。
 - `authorized_keys` 行用 `#user:<username>` 做归属标记，删除用户时 `scripts/remove_user.sh` 会删除该用户所有 key 行。
 - 只支持 `ssh-ed25519` 公钥，方便限制格式和减少老旧 key 类型。
+- **`add` 会自动 `chmod 600 keys/authorized_keys` 和 `chmod 755 keys/`。** OpenSSH 会拒绝 group-writable 的 authorized_keys 或其父目录；手工编辑 keys 后若 SSH 突然失败，先检查权限，再对照 `skills/add_user.md` 里的 uid 排查。
+- 修改 authorized_keys **不需要**重启容器，但前提是 sshd 愿意读取该文件——uid/权限不对时，改 key 内容也无效，需要先修属主或重建 gateway。

@@ -38,6 +38,16 @@ curl -s http://localhost:14096/
 # 预期：opencode HTTP 响应
 ```
 
+若 SSH 始终 `Permission denied (publickey)` 但公钥已在 `keys/authorized_keys` 里，先排查 bind mount 的 uid/权限（OpenSSH 会静默忽略不符合要求的 authorized_keys）：
+
+```bash
+ls -ln keys/authorized_keys keys/
+docker exec sshd-gateway id opencode
+docker exec sshd-gateway ls -ln /keys/authorized_keys /keys/
+# host 与容器内 authorized_keys uid 必须一致；文件 600、目录 755
+# 详见 skills/add_user.md
+```
+
 ### 3. 权限锁定验证
 
 用测试 key 尝试越权操作，确认都被拒绝。
