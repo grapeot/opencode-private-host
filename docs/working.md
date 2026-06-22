@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 2026-06-22
+
+- 修复 `sshd-gateway`：`opencode` 容器用户固定 UID/GID 1001，与 host 上 `keys/authorized_keys` bind mount 属主一致，否则 OpenSSH 会静默忽略公钥
+- `manage_key.sh` 写入后自动 `chmod 600 authorized_keys`、`chmod 755 keys/`
+- 更新 `skills/add_user.md`、`skills/onboard.md`、`skills/key_management.md`：补充 authorized_keys uid/权限排查与 GHCR、1Password service account 注意事项
+
 ### 2026-06-21
 
 - 项目脚手架初始化：创建 docs/、sshd-gateway/、opencode/、keys/、scripts/、tests/ 目录
@@ -37,3 +43,4 @@
 - Alpine `adduser -S` 创建的账号默认 shadow locked；即使 `PasswordAuthentication no`，OpenSSH 也会拒绝 public-key login。需要 `passwd -d opencode` 删除密码哈希，让账号可登录但仍只接受 key。
 - Docker named volume 首次挂载会覆盖镜像内路径内容；镜像里需要提前创建并 chown `/data`，否则非 root 用户启动 OpenCode 会 EACCES。
 - `opencode web` 在无桌面环境里会尝试 `xdg-open` 并打印错误；当前服务仍保持运行，E2E 以 HTTP 响应为准。
+- VPS 上 `keys/authorized_keys` 由部署用户（如 uid 1001）拥有；`sshd-gateway` 容器内 `opencode` 必须使用相同 uid，且文件/目录权限需满足 OpenSSH 要求（`authorized_keys` 不可 group-writable，`keys/` 目录不可 group-writable）。

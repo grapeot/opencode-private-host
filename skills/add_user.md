@@ -92,3 +92,18 @@ scripts/add_user.sh <username> <public_key_file> [gateway_host] [display_name]
 - OpenCode 容器里的 `/data` 和 `/data/config` 必须归 `opencode` 用户可写，否则 named volume 首次挂载后会出现 `EACCES: permission denied, mkdir '/data/opencode'`。
 - sshd-gateway 的 `opencode` 账号不能是 shadow locked 状态；密码认证仍然关闭，账号只通过 public key 登录。
 - `opencode web` 在容器里会尝试 `xdg-open` 并打印错误，但当前不影响服务继续运行。
+- **`keys/authorized_keys` 属主必须与 sshd-gateway 容器内 `opencode` 用户 UID 一致。** 公钥文件由 VPS 上的部署用户创建（例如 uid 1001），而 `AuthorizedKeysFile /keys/authorized_keys` 是 bind mount。OpenSSH 只接受属主为 root 或登录用户的 authorized_keys；UID 不匹配时会**静默忽略**整文件，客户端只看到 `Permission denied (publickey)`，sshd 日志里往往没有明显报错。`sshd-gateway/Dockerfile` 已把容器内 `opencode` 固定为 UID/GID 1001（与常见 VPS 部署用户一致）；若你的部署用户 uid 不同，改 Dockerfile 里的 uid/gid 后 `--build` 重建 gateway。
+- **`keys/` 与 `authorized_keys` 权限必须满足 OpenSSH 要求。** 目录不能 group-writable（推荐 `755`），文件不能 group/world-writable（推荐 `600`）。`scripts/manage_key.sh add` 写入后会自动修正；若手工编辑过 keys，可用 `chmod 755 keys && chmod 600 keys/authorized_keys` 修复。
+
+### SSH 公钥登录失败时的快速排查
+
+```bash
+# 1. 对比 host 与容器内 uid / 权限
+ls -ln keys/authorized_keys keys/
+docker exec sshd-gateway id opencode
+docker exec sshd-gateway ls -ln /keys/authorized_keys /keys/
+
+# 2. uid 应一致；authorized_keys 应为 600，keys/ 应为 755
+# 3. 若刚改过 Dockerfile uid，需重建 gateway：
+#    docker compose up -d --build sshd-gateway
+```
