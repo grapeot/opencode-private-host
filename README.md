@@ -34,13 +34,15 @@ opencode-<username> 容器 (Alpine + 定制 opencode binary)
 
 普通部署直接使用 `.env` 里的 `OPENCODE_IMAGE`，不需要本地 `opencode-official` checkout，也不需要从源码构建 OpenCode。
 
-只有维护者要重建并 push GHCR 镜像时，才需要本地 `opencode-official` checkout（`private-dev-squashed` 分支）：
+只有维护者要重建并 push GHCR 镜像时，才需要本地 `opencode-official` checkout（`private-dev-squashed` 分支）。流程见 `skills/build_image.md`：
 
 ```bash
 export OPENCODE_CHECKOUT=/path/to/opencode-official
 export GHCR_USER=your-github-username
 ./scripts/build_image.sh
 ```
+
+VPS 换镜像：`docker pull` 后 `op run --env-file .env -- docker compose up -d`（不要带 `-v`）。volume 会留下。若 `opencode models --refresh` 之后缓存有新模型 id、CLI/Web 仍没有，是 binary 过旧，不是缓存问题。
 
 ### 2. 配置 1Password
 
@@ -108,7 +110,8 @@ iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host
 │   ├── onboard.md
 │   ├── add_user.md
 │   ├── key_management.md
-│   └── web_ui.md        # 连接 Web UI、刷新模型列表
+│   ├── web_ui.md        # 连接 Web UI、刷新模型列表
+│   └── build_image.md   # 重建并发布 OPENCODE_IMAGE
 ├── scripts/
 │   ├── build_image.sh   # 维护者重建 + push OpenCode 镜像
 │   ├── deploy.sh        # 1Password 注入 + docker compose up

@@ -10,7 +10,7 @@ SSH 网关 + 每用户独立 OpenCode 容器的部署方案。sshd-gateway 容�
 - `opencode/` — OpenCode 容器镜像构建上下文（Alpine + 预编译 binary）
 - `keys/` — authorized_keys 文件 + port_map（gitignored，不进 repo）
 - `workspaces/` — 每个用户的 workspace 目录（context-infrastructure clone + tavily skill，gitignored）
-- `skills/` — 运维 skill 文档（onboard、add_user、key_management、web_ui）
+- `skills/` — 运维 skill 文档（onboard、add_user、key_management、web_ui、build_image）
 - `scripts/` — 构建、部署、用户管理、key 管理 CLI
 - `docs/` — PRD、RFC、working notes、测试策略
 

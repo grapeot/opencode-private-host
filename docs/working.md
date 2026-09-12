@@ -6,6 +6,8 @@
 
 - 新增 `skills/web_ui.md`：已有用户如何经 SSH tunnel 打开 OpenCode Web UI，以及如何 `opencode models --refresh` 后重启容器刷新模型列表
 - 更新 `skills/onboard.md`、`skills/key_management.md`、`AGENTS.md`、`README.md` 指向该 skill
+- 新增 `skills/build_image.md`：编译机 push GHCR + VPS pull / `compose up -d`（不带 `-v`）；写明「缓存有 id、`opencode models` 不列出 = binary 过旧」
+- `web_ui` 补上该判定，以及换镜像后再 refresh 的步骤
 
 ### 2026-06-22
 
@@ -54,3 +56,8 @@
 - Docker named volume 首次挂载会覆盖镜像内路径内容；镜像里需要提前创建并 chown `/data`，否则非 root 用户启动 OpenCode 会 EACCES。
 - `opencode web` 在无桌面环境里会尝试 `xdg-open` 并打印错误；当前服务仍保持运行，E2E 以 HTTP 响应为准。
 - VPS 上 `keys/authorized_keys` 由部署用户（如 uid 1001）拥有；`sshd-gateway` 容器内 `opencode` 必须使用相同 uid，且文件/目录权限需满足 OpenSSH 要求（`authorized_keys` 不可 group-writable，`keys/` 目录不可 group-writable）。
+- `docker compose restart` 不会清同一容器的 `/tmp`（`XDG_CACHE_HOME`）。刷新模型要先 `opencode models --refresh` 再重启 Web 进程。
+- models.dev 缓存里可以已有新 id（如 `gpt-6-astra`），旧 OpenCode binary 的 `opencode models openai` 仍不列出。这时只能换 `OPENCODE_IMAGE`，再 refresh。
+- VPS 换镜像：`docker pull` + `op run --env-file .env -- docker compose up -d`，不要 `-v`。named volume 和 `workspaces/<user>` 会留下。
+- `op run` 需要 `OP_SERVICE_ACCOUNT_TOKEN`；`source ~/.config/op/service_account.env` 不会自动进新 shell。若同时有个人 `op signin` session，可能仍报 not signed in。
+- 公开型号可能不叫运营者口头说的名字（GPT-6 → `gpt-6-astra`）。先对 models.dev / `opencode models` 的 id。

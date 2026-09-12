@@ -10,15 +10,15 @@
 
 给已部署用户建立 SSH tunnel、打开 OpenCode Web UI，以及在 Web 里看不到新模型时刷新 models.dev 缓存。
 
-**做什么**：确认逻辑用户名和 remotePort、必要时加设备公钥、打 local forward、告诉运营者打开哪个本机 URL；在容器内执行 `opencode models --refresh` 后重启对应 OpenCode 容器。
+**做什么**：确认逻辑用户名和 remotePort、必要时加设备公钥、打 local forward、告诉运营者打开哪个本机 URL；在容器内执行 `opencode models --refresh` 后重启对应 OpenCode 容器。若判定是 binary 过旧，转到 `skills/build_image.md`。
 
-**不做什么**：不创建新用户（那是 `skills/add_user.md`）；不替用户生成私钥；不把真实 gateway 域名、公钥或 token 写进公开文件；不把 OpenCode HTTP `4096` 映射到 host；不重建 GHCR 镜像（那是 `scripts/build_image.sh`）。
+**不做什么**：不创建新用户（那是 `skills/add_user.md`）；不替用户生成私钥；不把真实 gateway 域名、公钥或 token 写进公开文件；不把 OpenCode HTTP `4096` 映射到 host；不在本 skill 里从源码编镜像（那是 `skills/build_image.md`）。
 
 ## 开始前必问
 
 1. **逻辑用户名是哪个？** 从 `keys/port_map` 读出现有用户，请运营者确认。不要从 hostname 或示例名猜测。
 2. 若要连 Web：运营者是用 **电脑 SSH tunnel** 还是 **iOS 客户端**？电脑端还缺不缺一把已授权的 `ssh-ed25519` 公钥？
-3. 若要刷新模型：是刷新 **models.dev 公开目录**，还是重新连接 **ChatGPT / provider 账号**？
+3. 若要刷新模型：是刷新 **models.dev 公开目录**、重新连接 **ChatGPT / provider 账号**，还是缓存里已有 id 但 CLI/Web 仍没有（**镜像过旧**）？
 
 逻辑用户名 ≠ SSH 登录名。SSH 登录名对所有用户始终是 `opencode`。
 
@@ -96,9 +96,24 @@ docker compose restart opencode-<username>
 
 OAuth token 在用户 volume 的 `/data/opencode/auth.json`，重启容器不会重拉账号侧模型。需要在 Web UI 再走一遍 `/connect` → OpenAI → ChatGPT Plus/Pro。
 
-### 镜像过旧
+### 镜像过旧（refresh 之后 Web 仍没有新模型）
 
-`docker exec opencode-<username> opencode --version` 若是很久以前的 `private-dev-squashed` 构建，刷新缓存也补不进需要新 runtime 才认识的型号。那种情况走镜像维护（`scripts/build_image.sh` + pull `OPENCODE_IMAGE`），不要和本 skill 的 cache refresh 混在一起。
+先做上面的 `--refresh` + 重启，再对照：
+
+```bash
+docker exec opencode-<username> opencode --version
+docker exec opencode-<username> opencode models openai
+# 缓存里有没有这个 id（容器内不一定有 python）
+docker exec opencode-<username> grep -o 'gpt-6-astra' /tmp/opencode-cache/opencode/models.json | head
+```
+
+判定：
+
+- 缓存 JSON **没有** 该 id：models.dev 还没收录，或 `--refresh` 没成功。再 refresh，或确认型号的公开 id（GPT-6 是 `gpt-6-astra`，不是 `gpt-6`）。
+- 缓存 **有** id，但 `opencode models openai` **不列出**：binary 不认识它。`docker compose restart` 和再 refresh 都没用。走 `skills/build_image.md` 换 `OPENCODE_IMAGE`。
+- 换镜像后：VPS `docker pull` + `op run --env-file .env -- docker compose up -d`（不带 `-v`），再跑一遍本 skill 的 `--refresh` + 重启。volume 里的 OAuth / session / workspace 会留下。
+
+不要在本 skill 里从源码 `bun run build`。VPS 普通部署只 pull GHCR。
 
 ## 验收标准
 
@@ -113,7 +128,8 @@ OAuth token 在用户 volume 的 `/data/opencode/auth.json`，重启容器不会
 
 1. `docker exec opencode-<username> opencode models --refresh` 成功退出。
 2. `opencode-<username>` 已重启且仍在 running。
-3. `docker exec opencode-<username> opencode models openai` 能列出模型；运营者刷新 Web 后能看到更新后的列表。
+3. `docker exec opencode-<username> opencode models openai` 能列出运营者要的型号（例如 `openai/gpt-6-astra`）。若缓存有、CLI 没有，转 `skills/build_image.md`，不要反复 restart。
+4. 运营者刷新 Web 后能在 picker 里看到更新后的列表。
 
 ## 可用资源
 
@@ -122,6 +138,7 @@ OAuth token 在用户 volume 的 `/data/opencode/auth.json`，重启容器不会
 - `scripts/manage_key.sh`
 - `scripts/export_host_config.sh`
 - `skills/key_management.md`：加/删设备 key
+- `skills/build_image.md`：换 `OPENCODE_IMAGE`
 - `docs/test.md`：SSH tunnel E2E 命令参考
 
 ## 已知陷阱
@@ -131,4 +148,5 @@ OAuth token 在用户 volume 的 `/data/opencode/auth.json`，重启容器不会
 - 加 key 后不需要重启 gateway；uid/权限不对时 OpenSSH 会静默忽略整个 `authorized_keys`，见 `skills/add_user.md`。
 - `xdg-open` 报错可忽略。
 - 刷新 models.dev 缓存后必须重启对应 `opencode-<username>`，否则正在跑的 Web 进程仍持有旧列表。
+- 缓存有新 id、`opencode models` 没有 = 镜像过旧，不是 SSH / volume 坏了。
 - 公开文件里的 gateway 只用 `gateway.example.invalid` 这类 placeholder，不要写入真实域名。
