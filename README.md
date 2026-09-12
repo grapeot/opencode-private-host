@@ -107,7 +107,8 @@ iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host
 ├── skills/              # 运维 skill 文档
 │   ├── onboard.md
 │   ├── add_user.md
-│   └── key_management.md
+│   ├── key_management.md
+│   └── web_ui.md        # 连接 Web UI、刷新模型列表
 ├── scripts/
 │   ├── build_image.sh   # 维护者重建 + push OpenCode 镜像
 │   ├── deploy.sh        # 1Password 注入 + docker compose up

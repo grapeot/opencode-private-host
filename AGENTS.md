@@ -10,7 +10,7 @@ SSH 网关 + 每用户独立 OpenCode 容器的部署方案。sshd-gateway 容�
 - `opencode/` — OpenCode 容器镜像构建上下文（Alpine + 预编译 binary）
 - `keys/` — authorized_keys 文件 + port_map（gitignored，不进 repo）
 - `workspaces/` — 每个用户的 workspace 目录（context-infrastructure clone + tavily skill，gitignored）
-- `skills/` — 运维 skill 文档（add_user、key_management）
+- `skills/` — 运维 skill 文档（onboard、add_user、key_management、web_ui）
 - `scripts/` — 构建、部署、用户管理、key 管理 CLI
 - `docs/` — PRD、RFC、working notes、测试策略
 
@@ -34,7 +34,7 @@ SSH 网关 + 每用户独立 OpenCode 容器的部署方案。sshd-gateway 容�
 
 - [iOS 客户端](https://github.com/grapeot/opencode_ios_client)的 `SSHTunnelManager.swift:353` 硬编码 targetHost 为 `127.0.0.1`，所以 socat 必须监听 `127.0.0.1`，不能改成其他 host。remotePort 用户可配，每个用户的 remotePort 不同（19001、19002...）。
 - OpenCode 的 `OPENCODE_AUTH_CONTENT` 和 `OPENCODE_CONFIG_CONTENT` 环境变量是 opencode 为容器场景设计的注入通道，见 `packages/opencode/src/auth/index.ts:59` 和 `packages/opencode/src/config/config.ts:467`。
-- OpenCode 的存储路径由 XDG 环境变量控制（`packages/core/src/global.ts:11-14`）：`XDG_DATA_HOME` → data 目录，`XDG_CONFIG_HOME` → config 目录。Dockerfile 里设 `XDG_DATA_HOME=/data`、`XDG_CONFIG_HOME=/data/config`，对应 volume 挂载。
+- OpenCode 的存储路径由 XDG 环境变量控制（`packages/core/src/global.ts:11-14`）：`XDG_DATA_HOME` → data 目录，`XDG_CONFIG_HOME` → config 目录。Dockerfile 里设 `XDG_DATA_HOME=/data`、`XDG_CONFIG_HOME=/data/config`、`XDG_CACHE_HOME=/tmp/opencode-cache`。data/config 对应 volume 挂载；模型列表缓存在 `/tmp`，`docker compose restart` 不会清掉。刷新步骤见 `skills/web_ui.md`。
 - Tavily skill 从 `TAVILY_API_KEY` 环境变量读 key（`skill_tavily.md:28`），不需要 `.env` 文件就能在容器里工作。
 - context-infrastructure 公开 repo：`https://github.com/grapeot/context-infrastructure`
 - tavily skill 公开 repo：`https://github.com/grapeot/tavily-skill`

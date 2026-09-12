@@ -10,7 +10,7 @@
 
 把一个空的 opencode-private-host 部署带到可用状态：`.env` 可用、Docker Compose 可启动、第一个用户存在、SSH tunnel 能访问对应 OpenCode Web UI。
 
-这个 skill 负责首次上线的引导和决策收集。真正创建用户时调用 `scripts/add_user.sh`；后续增加设备或用户分别看 `skills/key_management.md` 和 `skills/add_user.md`。
+这个 skill 负责首次上线的引导和决策收集。真正创建用户时调用 `scripts/add_user.sh`；后续增加设备或用户分别看 `skills/key_management.md` 和 `skills/add_user.md`。打开已有用户的 Web UI、刷新模型列表看 `skills/web_ui.md`。
 
 不做这些事：不替用户生成 iOS 私钥，不把运营者自己的 OpenAI / Codex OAuth token 注入给别人，不把真实 1Password 路径或 key 写进公开文件，不暴露 OpenCode HTTP 端口到 host。
 
@@ -83,7 +83,7 @@ onboarding 完成时必须满足这些条件：
 
 如果 `scripts/add_user.sh` 默认 workspace 初始化耗时太长，本地 smoke test 可以用 `SKIP_WORKSPACE_INIT=1`。正式 VPS onboarding 应该跑完整 workspace 初始化，确保 `context-infrastructure` 和 `tavily-skill` 都存在。
 
-第一个用户启动后，管理员需要先完成 provider auth 验证：用该用户 key 建立 tunnel，访问 `http://127.0.0.1:<localForwardPort>`，在 OpenCode Web UI 中连接 ChatGPT / provider。这个动作完成前，iOS native client 可以连上 server，但发起需要 provider 的对话可能失败。
+第一个用户启动后，管理员需要先完成 provider auth 验证：按 `skills/web_ui.md` 用该用户 key 建立 tunnel，访问 `http://127.0.0.1:<localForwardPort>`，在 OpenCode Web UI 中连接 ChatGPT / provider。这个动作完成前，iOS native client 可以连上 server，但发起需要 provider 的对话可能失败。
 
 给 iOS 用户配置连接时，管理员运行：
 

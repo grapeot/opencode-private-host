@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 2026-09-12
+
+- 新增 `skills/web_ui.md`：已有用户如何经 SSH tunnel 打开 OpenCode Web UI，以及如何 `opencode models --refresh` 后重启容器刷新模型列表
+- 更新 `skills/onboard.md`、`skills/key_management.md`、`AGENTS.md`、`README.md` 指向该 skill
+
 ### 2026-06-22
 
 - 澄清文档中的镜像依赖：普通部署和 shell 测试使用 `OPENCODE_IMAGE`，不需要 `opencode-official` checkout；只有维护者重建 GHCR 镜像时才需要源码 checkout + Bun
