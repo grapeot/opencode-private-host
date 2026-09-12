@@ -85,7 +85,7 @@ scripts/export_host_config.sh alice gateway.example.invalid "Alice OpenCode"
 
 用户在 iOS 里进入 Settings -> Current Host -> Add Host，把 JSON 粘到 Import Host Config，点 Import Host Config，再保存。每台设备仍然使用自己生成的 SSH 私钥；导入配置不会带入任何 secret。
 
-之后用户就可以从电脑上用这把 key 访问自己的 OpenCode 容器。iOS 客户端用另一把 key，两把 key 独立，互不影响。设备丢失时：
+之后用户就可以从电脑上用这把 key 访问自己的 OpenCode 容器。打 SSH tunnel、打开 Web UI 的步骤见 `skills/web_ui.md`。iOS 客户端用另一把 key，两把 key 独立，互不影响。设备丢失时：
 
 ```bash
 scripts/manage_key.sh remove alice /path/to/lost_device_ed25519.pub
